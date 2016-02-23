@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"io"
-	"net"
-	"strings"
-	"net/http"
+	"github.com/boltdb/bolt"
 	"github.com/gorilla/context"
 	"github.com/julienschmidt/httprouter"
-	"github.com/boltdb/bolt"
+	"io"
+	"log"
+	"net"
+	"net/http"
+	"strings"
 )
 
 var db *bolt.DB
@@ -43,12 +43,12 @@ func main() {
 }
 
 //Handle HTTP
-func handleHTTP(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {	
+func handleHTTP(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	client := &http.Client{}
 	req.RequestURI = ""
 	fmt.Printf("%s\n", req.URL.String()) // Print request to console
 	// Handle management console
-	if strings.Contains(req.URL.String(),"://management.console") {
+	if strings.Contains(req.URL.String(), "://management.console") {
 		management(w, req, ps)
 		return
 	}
@@ -60,7 +60,7 @@ func handleHTTP(w http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 		c := b.Cursor()
 
 		for k, _ := c.First(); k != nil; k, _ = c.Next() {
-			if strings.Contains(req.URL.String() ,string(k)) {
+			if strings.Contains(req.URL.String(), string(k)) {
 				fmt.Fprintf(w, "%s", "Blocked by proxy")
 				finished = true
 				return nil
@@ -93,7 +93,7 @@ func management(w http.ResponseWriter, req *http.Request, ps httprouter.Params) 
 		})
 		http.Redirect(w, req, "/", http.StatusFound)
 		return
-	} else if strings.Contains(req.URL.String(),"/blocklist"){
+	} else if strings.Contains(req.URL.String(), "/blocklist") {
 		// Display blocklist by reading from DB
 		db.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("blocklist"))
